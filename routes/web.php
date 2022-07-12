@@ -45,7 +45,13 @@ Route::group(['middleware' => [
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::resource('posts', PostController::class);
+    Route::controller(PostController::class)->group(function () {
+        Route::get('/posts', 'index')->name('posts.index');
+        Route::get('/posts/create', 'create')->name('posts.create');
+        Route::get('/posts/get_data_categories', 'get_data_categories')->name('get.data.categories');
+        Route::get('/posts/get_data_tags', 'get_data_tags')->name('get.data.categories');
+        Route::post('/posts', 'store')->name('posts.store');
+    });
 });
 
 Route::controller(BlogController::class)->group(function () {

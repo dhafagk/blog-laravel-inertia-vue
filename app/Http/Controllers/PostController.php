@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\Tag;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class PostController extends Controller
@@ -22,10 +25,53 @@ class PostController extends Controller
 
     public function create()
     {
-        $categories = Category::orderBy('name', 'asc')->get()->toArray();
+        return Inertia::render('Post/Create');
+    }
 
-        //return ['categories' => $categories];
+    public function get_data_categories()
+    {
+        $collection = Category::orderBy('name', 'asc')->get()->toArray();
 
-        return Inertia::render('Post/Create', ['categories' => $categories]);
+        return response()->json($collection);
+    }
+
+    public function get_data_tags()
+    {
+        $collection = Tag::orderBy('name', 'asc')->get()->toArray();
+
+        return response()->json($collection);
+    }
+
+    public function store(Request $request)
+    {
+        Validator::make($request->all(), [
+            'title' => [
+                'required',
+                'string'
+            ],
+            'body' => [
+                'string'
+            ],
+            'category' => [
+                'required',
+                'array'
+            ],
+            'tag' => [
+                'required',
+                'array'
+            ],
+        ])->validate();
+
+        $params = $request->all();
+        $params['slug'] = Str::slug($params['title']);
+        $params['user_id'] = $request->user()->id;
+        $params['post_type'] = Post::POST;
+        $params['status'] = Post::ACTIVE;
+
+        $post = Post::create($params);
+        $post->categories()->attach($params['category']);
+        $post->tags()->attach($params['tag']);
+
+        return redirect('/posts')->with('message', 'Post created successfully.');
     }
 }

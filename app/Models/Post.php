@@ -11,6 +11,16 @@ class Post extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'title',
+        'slug',
+        'post_type',
+        'created_at',
+        'status',
+        'body',
+        'user_id',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -31,18 +41,18 @@ class Post extends Model
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
-    protected const DRAFT = 0;
-    protected const ACTIVE = 1;
-    protected const INACTIVE = 2;
+    public const DRAFT = 0;
+    public const ACTIVE = 1;
+    public const INACTIVE = 2;
 
-    protected const STATUS = [
+    public const STATUS = [
         self::DRAFT => 'draft',
         self::ACTIVE => 'active',
         self::INACTIVE => 'inactive',
     ];
 
-    protected const POST = 'post';
-    protected const PAGE = 'page';
+    public const POST = 'post';
+    public const PAGE = 'page';
 
     protected $casts = [
         'created_at' => 'datetime:d M, Y H:i',

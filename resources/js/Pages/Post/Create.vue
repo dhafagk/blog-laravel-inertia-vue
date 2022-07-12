@@ -1,16 +1,15 @@
 <script>
-import { ref } from "vue";
-
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
 import { useForm } from "@inertiajs/inertia-vue3";
-import Multiselect from "vue-multiselect";
+import Multiselect from "@vueform/multiselect";
+import "@vueform/multiselect/themes/default.css";
 
 export default {
-    props: {
-        categories: Object,
-    },
+    // props: {
+    //     categories: Object,
+    // },
     components: {
         AppLayout,
         Link,
@@ -20,61 +19,54 @@ export default {
         const form = useForm({
             title: null,
             body: null,
-            categoryIds: null,
-            tags: null,
+            category: null,
+            tag: null,
         });
 
         return { form };
     },
     data() {
         return {
-            value: [],
-            options: [
-                { name: "Vue.js", language: "JavaScript" },
-                { name: "Adonis", language: "JavaScript" },
-                { name: "Rails", language: "Ruby" },
-                { name: "Sinatra", language: "Ruby" },
-                { name: "Laravel", language: "PHP" },
-                { name: "Phoenix", language: "Elixir" },
-            ],
+            value: null,
+            categories: [],
+            tags: [],
+            error: [],
         };
     },
+    created() {
+        axios
+            .get("/posts/get_data_categories")
+            .then((res) => {
+                this.categories = res.data.map((e) => {
+                    return {
+                        value: e.id,
+                        label: e.name,
+                    };
+                });
+            })
+            .catch((err) => {
+                this.error = err;
+            });
+
+        axios
+            .get("/posts/get_data_tags")
+            .then((res) => {
+                this.tags = res.data.map((e) => {
+                    return {
+                        value: e.id,
+                        label: e.name,
+                    };
+                });
+            })
+            .catch((err) => {
+                this.error = err;
+            });
+    },
+    computed: {
+        console: () => console,
+        window: () => window,
+    },
 };
-
-// const form = useForm({
-//     title: null,
-//     body: null,
-//     categoryIds: null,
-//     tags: null,
-// });
-
-// const selected = ref(null);
-// const option = (categories) => {
-//     return [];
-// };
-
-// const editMode = ref(false);
-// const form = ref({
-//     title: null,
-//     body: null,
-//     category_ids: [],
-//     tags: null,
-// });
-
-// const reset = () => {
-//     this.form = {
-//         title: null,
-//         body: null,
-//         category_ids: [],
-//         tags: null,
-//     };
-// };
-
-// const save = (data) => {
-//     this.$inertia.post("/posts", data);
-//     this.reset();
-//     this.editMode = false;
-// };
 </script>
 
 <template>
@@ -106,7 +98,7 @@ export default {
                             </div>
                         </div>
 
-                        <form @submit.prevent="form.post('/login')">
+                        <form @submit.prevent="form.post('/posts')">
                             <div class="bg-white">
                                 <div class="">
                                     <!-- title -->
@@ -160,35 +152,19 @@ export default {
                                             class="block text-gray-700 text-sm font-bold mb-2"
                                             >Category:</label
                                         >
-                                        <multiselect
-                                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                            v-model="value"
-                                            :options="options"
-                                            :multiple="true"
+                                        <Multiselect
+                                            v-model="form.category"
+                                            mode="tags"
                                             :close-on-select="false"
-                                            :clear-on-select="false"
-                                            :preserve-search="true"
-                                            placeholder="Pick some"
-                                            label="name"
-                                            track-by="name"
-                                            :preselect-first="true"
-                                        >
-                                        </multiselect>
-                                        <pre
-                                            class="language-json"
-                                        ><code>{{ value  }}</code></pre>
-                                        <!-- <option
-                                            v-for="category in Categories"
-                                            v-bind:key="category.id"
-                                            :value="category.id"
-                                        >
-                                            {{ category.name }}
-                                        </option> -->
+                                            :searchable="true"
+                                            :create-option="true"
+                                            :options="categories"
+                                        />
                                         <div
-                                            v-if="form.errors.category_ids"
+                                            v-if="form.errors.category"
                                             class="text-red-500"
                                         >
-                                            {{ form.errors.category_ids }}
+                                            {{ form.errors.category }}
                                         </div>
                                     </div>
 
@@ -199,12 +175,13 @@ export default {
                                             class="block text-gray-700 text-sm font-bold mb-2"
                                             >Tags:</label
                                         >
-                                        <input
-                                            type="text"
-                                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                            id="formTags"
-                                            placeholder="Enter Tags separate by Comma"
-                                            v-model="form.tags"
+                                        <Multiselect
+                                            v-model="form.tag"
+                                            mode="tags"
+                                            :close-on-select="false"
+                                            :searchable="true"
+                                            :create-option="true"
+                                            :options="tags"
                                         />
                                         <div
                                             v-if="form.errors.tags"
@@ -234,8 +211,8 @@ export default {
                             </div>
 
                             <!-- remember me -->
-                            <input type="checkbox" v-model="form.remember" />
-                            Remember Me
+                            <!-- <input type="checkbox" v-model="form.remember" />
+                            Remember Me -->
                             <!-- submit -->
                         </form>
 
