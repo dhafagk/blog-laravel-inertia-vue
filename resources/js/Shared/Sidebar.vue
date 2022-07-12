@@ -1,6 +1,20 @@
 <script setup>
+import { ref, onMounted } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { Link } from "@inertiajs/inertia-vue3";
+
+let categories = ref([]);
+
+onMounted(() => {
+    axios
+        .get("/api/get_data_categories")
+        .then((res) => {
+            categories.value = res.data;
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+});
 
 const logout = () => {
     Inertia.post(route("logout"));
@@ -27,10 +41,10 @@ const logout = () => {
         <div class="w-full bg-white shadow flex flex-col my-4 p-6">
             <p class="text-xl font-semibold pb-5">Category List</p>
             <!-- {{ console.log(catList) }} -->
-            <ul class="pb2">
-                <!-- <li v-for="cat in $page.props.categoryList" :key="cat.slug">
-          <Link :href="`/category/${cat.slug}`">{{ cat.name }}</Link>
-        </li> -->
+            <ul class="pb2 pl-4 list-disc">
+                <li v-for="cat in categories" :key="cat.id">
+                    <Link :href="`/category/${cat.slug}`">{{ cat.name }}</Link>
+                </li>
             </ul>
         </div>
 

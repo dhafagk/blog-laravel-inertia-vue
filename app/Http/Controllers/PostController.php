@@ -28,20 +28,6 @@ class PostController extends Controller
         return Inertia::render('Post/Create');
     }
 
-    public function get_data_categories()
-    {
-        $collection = Category::orderBy('name', 'asc')->get()->toArray();
-
-        return response()->json($collection);
-    }
-
-    public function get_data_tags()
-    {
-        $collection = Tag::orderBy('name', 'asc')->get()->toArray();
-
-        return response()->json($collection);
-    }
-
     public function store(Request $request)
     {
         Validator::make($request->all(), [

@@ -5,6 +5,8 @@ use App\Http\Controllers\PostController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\Category;
+use App\Models\Tag;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,13 +47,7 @@ Route::group(['middleware' => [
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::controller(PostController::class)->group(function () {
-        Route::get('/posts', 'index')->name('posts.index');
-        Route::get('/posts/create', 'create')->name('posts.create');
-        Route::get('/posts/get_data_categories', 'get_data_categories')->name('get.data.categories');
-        Route::get('/posts/get_data_tags', 'get_data_tags')->name('get.data.categories');
-        Route::post('/posts', 'store')->name('posts.store');
-    });
+    Route::resource('posts', PostController::class);
 });
 
 Route::controller(BlogController::class)->group(function () {
@@ -60,4 +56,11 @@ Route::controller(BlogController::class)->group(function () {
     Route::get('/user/{userID}', 'user_posts')->name('blog.user_posts');
     Route::get('/category/{slug}', 'category')->name('blog.category_posts');
     Route::get('/tag/{slug}', 'tag')->name('blog.tag_posts');
+});
+
+Route::get('/api/get_data_categories', function () {
+    return response()->json(Category::orderBy('name', 'asc')->get()->toArray());
+});
+Route::get('/api/get_data_tags', function () {
+    return response()->json(Tag::orderBy('name', 'asc')->get()->toArray());
 });
