@@ -2,10 +2,17 @@
 import AppLayout from "@/Layouts/AppLayout.vue";
 import Pagination from "@/Shared/Pagination.vue";
 import { Link } from "@inertiajs/inertia-vue3";
+import { Inertia } from "@inertiajs/inertia";
 
 defineProps({
     posts: Object,
 });
+
+const deletePost = (prop) => {
+    if (!confirm("Are you sure want to delete?")) return;
+
+    Inertia.delete("/posts/" + prop.id);
+};
 </script>
 
 <template>
@@ -86,11 +93,28 @@ defineProps({
                                             {{ post.created_at }}
                                         </td>
                                         <td class="px-6 py-4 text-right">
-                                            <a
-                                                href="#"
+                                            <Link
+                                                v-show="
+                                                    $page.props.user.id ==
+                                                    post.user_id
+                                                "
+                                                :href="
+                                                    route('posts.edit', post.id)
+                                                "
+                                                preserve-state
                                                 class="font-medium text-blue-600 hover:underline"
-                                                >Edit</a
+                                                >Edit
+                                            </Link>
+                                            <button
+                                                @click="deletePost(post)"
+                                                v-show="
+                                                    $page.props.user.id ==
+                                                    post.user_id
+                                                "
+                                                class="font-medium text-red-500 hover:underline"
                                             >
+                                                Delete
+                                            </button>
                                         </td>
                                     </tr>
                                     <Pagination :links="posts.links" />

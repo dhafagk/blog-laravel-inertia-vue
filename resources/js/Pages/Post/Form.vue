@@ -7,6 +7,10 @@ import { useForm } from "@inertiajs/inertia-vue3";
 import Multiselect from "@vueform/multiselect";
 import "@vueform/multiselect/themes/default.css";
 
+const props = defineProps({
+    post: Object,
+});
+
 const form = useForm({
     title: null,
     body: null,
@@ -14,9 +18,25 @@ const form = useForm({
     tag: null,
 });
 
+let buttonText = ref("Save");
+let title = ref("Create New Post");
 let categories = ref([]);
 let tags = ref([]);
 let error = ref([]);
+
+if (props.post) {
+    buttonText = ref("Update");
+    title = ref("Edit Post");
+    form.title = props.post.title;
+    form.body = props.post.body;
+    form.category = JSON.parse(JSON.stringify(props.post.categories)).map(
+        (e) => e.id
+    );
+    form.tag = JSON.parse(JSON.stringify(props.post.tags)).map((e) => e.id);
+}
+
+console.log(editMode);
+console.log(buttonText);
 
 const getCategoriesData = () => {
     return axios.get("/api/get_data_categories");
@@ -41,13 +61,17 @@ onMounted(() => {
                     label: e.name,
                 };
             });
-            // console.log(categories, "category");
-            // console.log(tags, "tag");
         })
         .catch((err) => {
             error.value = err;
         });
 });
+
+const submit = () => {
+    if (props.post) return form.put(`/posts/${props.post.id}`);
+
+    return form.post("/posts");
+};
 </script>
 
 <template>
@@ -64,7 +88,7 @@ onMounted(() => {
                     <div
                         class="p-6 sm:px-20 bg-white border-b border-gray-200 pb-20"
                     >
-                        <div class="mt-8 mb-8 text-2xl">Create New Post</div>
+                        <div class="mt-8 mb-8 text-2xl">{{ title }}</div>
                         <div
                             class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md my-3"
                             role="alert"
@@ -79,7 +103,7 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <form @submit.prevent="form.post('/posts')">
+                        <form @submit.prevent="submit()">
                             <div class="bg-white">
                                 <div class="">
                                     <!-- title -->
@@ -186,15 +210,21 @@ onMounted(() => {
                                         class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-green-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none focus:border-green-700 focus:shadow-outline-green transition ease-in-out duration-150 sm:text-sm sm:leading-5"
                                         :disabled="form.processing"
                                     >
-                                        Save
+                                        {{ buttonText }}
                                     </button>
                                 </span>
+                                <span
+                                    class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto"
+                                >
+                                    <Link
+                                        :href="`/posts`"
+                                        preserve-state
+                                        class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5"
+                                    >
+                                        Cancel
+                                    </Link>
+                                </span>
                             </div>
-
-                            <!-- remember me -->
-                            <!-- <input type="checkbox" v-model="form.remember" />
-                            Remember Me -->
-                            <!-- submit -->
                         </form>
                     </div>
                 </div>
